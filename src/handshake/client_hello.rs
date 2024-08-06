@@ -8,6 +8,7 @@ use p256::EncodedPoint;
 use typenum::Unsigned;
 
 use crate::config::{TlsCipherSuite, TlsConfig};
+use crate::extensions::extension_data::alpn::{ALPNList, Protocol};
 use crate::extensions::extension_data::key_share::{KeyShareClientHello, KeyShareEntry};
 use crate::extensions::extension_data::pre_shared_key::PreSharedKeyClientHello;
 use crate::extensions::extension_data::psk_key_exchange_modes::{
@@ -104,6 +105,16 @@ where
 
             ClientHelloExtension::PskKeyExchangeModes(PskKeyExchangeModes {
                 modes: Vec::from_slice(&[PskKeyExchangeMode::PskDheKe]).unwrap(),
+            })
+            .encode(buf)?;
+
+            ClientHelloExtension::ApplicationLayerProtocolNegotiation(ALPNList {
+                protocol_list: self
+                    .config
+                    .alpn
+                    .iter()
+                    .map(|name| Protocol { name })
+                    .collect(),
             })
             .encode(buf)?;
 

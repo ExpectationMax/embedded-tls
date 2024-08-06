@@ -130,6 +130,7 @@ pub struct TlsConfig<'a> {
     pub(crate) ca: Option<Certificate<'a>>,
     pub(crate) cert: Option<Certificate<'a>>,
     pub(crate) priv_key: &'a [u8],
+    pub(crate) alpn: Vec<&'a str, 4>,
 }
 
 pub trait TlsClock {
@@ -267,6 +268,7 @@ impl<'a> TlsConfig<'a> {
             ca: None,
             cert: None,
             priv_key: &[],
+            alpn: Vec::new(),
         };
 
         if cfg!(feature = "alloc") {
@@ -369,6 +371,13 @@ impl<'a> TlsConfig<'a> {
     pub fn with_psk(mut self, psk: &'a [u8], identities: &[&'a [u8]]) -> Self {
         // TODO: Remove potential panic
         self.psk = Some((psk, unwrap!(Vec::from_slice(identities).ok())));
+        self
+    }
+
+    pub fn with_alpn(mut self, alpns: &[&'a str]) -> Self {
+        assert!(alpns.len() < 5);
+        self.alpn.clear();
+        unwrap!(self.alpn.extend_from_slice(alpns));
         self
     }
 }
